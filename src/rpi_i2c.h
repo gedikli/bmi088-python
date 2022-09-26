@@ -45,6 +45,7 @@ int rpi_i2c_init(
 int8_t rpi_i2c_read(uint8_t dev_addr, uint8_t reg_addr, uint8_t *data, uint16_t len);
 int8_t rpi_i2c_write(uint8_t dev_addr, uint8_t reg_addr, uint8_t *data, uint16_t len);
 void rpi_delay_ms(uint32_t millis);
+void rpi_i2c_close();
 
 int i2c_read_byte(uint8_t dev, uint8_t reg);
 int i2c_read_word(uint8_t dev, uint8_t reg);

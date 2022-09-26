@@ -46,8 +46,10 @@ void* rpi_bmi088_alloc(void) {
 }
 
 int rpi_bmi088_free(rpi_bmi088_t* dev) {
-	free(dev);
-	return 0;
+	if (dev)
+		free(dev);
+		return 0;
+	return 1;
 }
 
 static double accel_range_map[] = {
@@ -199,6 +201,56 @@ uint32_t rpi_bmi088_get_sensor_time(
 	bmi08a_get_sensor_time(&dev->bmi, &snr_tm);
 
 	return snr_tm;
+}
+
+
+int rpi_bmi088_reset(rpi_bmi088_t* dev)
+{
+	int result = 0;
+
+	// Accelerometer Power off.
+	dev->bmi.accel_cfg.power = BMI08X_ACCEL_PM_SUSPEND;
+	result = bmi08a_set_power_mode(&dev->bmi);
+	if (result != 0)
+		return 1;
+	dev->bmi.delay_ms(100);
+
+	result = bmi08a_get_power_mode(&dev->bmi);
+	if (result != 0)
+		return 2;
+	if (dev->bmi.accel_cfg.power != BMI08X_ACCEL_PM_SUSPEND)
+	{
+		printf("Could not set accelerometer power mode to SUSPEND. The current mode is %d\n", dev->bmi.accel_cfg.power);
+		return 3;
+	}
+	dev->bmi.delay_ms(100);
+
+	dev->bmi.gyro_cfg.power = BMI08X_GYRO_PM_DEEP_SUSPEND;
+	result = bmi08g_set_power_mode(&dev->bmi);
+	if (result != 0)
+		return 7;
+
+	dev->bmi.delay_ms(100);
+	if (dev->bmi.gyro_cfg.power != BMI08X_GYRO_PM_DEEP_SUSPEND)
+	{
+		printf("Could not set gyroscope power mode to DEEP_SUSPEND. The current mode is %d\n", dev->bmi.gyro_cfg.power);
+		return 8;
+	}
+	dev->bmi.delay_ms(100);
+
+	result = bmi08a_soft_reset(&dev->bmi);
+	if (result != 0)
+		return 9;
+	dev->bmi.delay_ms(100);
+	
+	result = bmi08g_soft_reset(&dev->bmi);
+	if (result != 0)
+		return 10;
+	dev->bmi.delay_ms(100);
+
+	rpi_i2c_close();
+
+	return 0;
 }
 
 #ifdef _HAS_MAIN

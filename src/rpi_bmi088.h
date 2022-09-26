@@ -54,6 +54,9 @@ extern int rpi_bmi088_init(
 	const struct bmi08x_cfg* gyro
 );
 
+
+extern int rpi_bmi088_reset(rpi_bmi088_t* dev);
+
 extern int rpi_bmi088_get_accel(
 	rpi_bmi088_t* dev,
 	double* x, double* y, double* z

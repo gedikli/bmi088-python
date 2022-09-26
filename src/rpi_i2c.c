@@ -54,9 +54,17 @@ int rpi_i2c_init(const char* dev_path) {
 		printf("Failed to open i2c bus %s, error = %d\n",
 		       dev_path, fd);
 	} else {
+		//printf("open %s\n", dev_path);
 		rpi_i2c_fd = fd;
 	}
 	return fd;
+}
+
+void rpi_i2c_close()
+{
+	if (rpi_i2c_fd >= 0)
+		close(rpi_i2c_fd);
+		rpi_i2c_fd = -1;
 }
 
 // return none-zero = FAIL
@@ -78,8 +86,8 @@ int8_t rpi_i2c_write(uint8_t dev_addr, uint8_t reg_addr, uint8_t *data, uint16_t
 	memcpy(buf + 1, data, len);
 
 	if ((rt = write(rpi_i2c_fd, buf, len + 1)) != len + 1) {
-		printf("Failed to write i2c bus %u bytes with error = %d.\n",
-		       len + 1, rt);
+		printf("Failed to write i2c bus %u bytes with error = %d. device: %u, register %u\n",
+		       len + 1, rt, dev_addr, reg_addr);
 		rt = RPI_I2C_FAIL;
 	} else {
 		rt = RPI_I2C_OK;
